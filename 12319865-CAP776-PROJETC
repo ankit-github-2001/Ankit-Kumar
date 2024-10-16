@@ -3,10 +3,16 @@ import re
 import hashlib
 import requests
 from datetime import datetime
+import pytz
 import os
 
 REGNO_FILE_PATH = 'regno.csv'
 USER_ACTIVITY_LOG_PATH = 'user_activity_log.csv'
+
+def get_current_time_in_ist():
+    ist = pytz.timezone('Asia/Kolkata')
+    now = datetime.now(ist)
+    return now
 
 def validate_email(email):
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
@@ -23,9 +29,12 @@ def hash_password(password):
 
 def signup(email, password, security_question, correct_answer):
     hashed_password = hash_password(password)
+    signup_time = get_current_time_in_ist()
+    date_str = signup_time.strftime("%Y-%m-%d")
+    time_str = signup_time.strftime("%H:%M:%S")
     with open(REGNO_FILE_PATH, mode='a', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow([email, hashed_password, security_question, correct_answer])
+        writer.writerow([email, hashed_password, security_question, correct_answer, date_str, time_str])
     print("Signup successful! Now logging in...")
     login(email)
 
@@ -133,7 +142,7 @@ def use_geolocation(email):
         print("Error retrieving data.")
 
 def log_activity(email, ip, country, city, region, latitude, longitude, timezone, isp):
-    now = datetime.now()
+    now = get_current_time_in_ist()
     date_str = now.strftime("%Y-%m-%d")
     time_str = now.strftime("%H:%M:%S")
 
@@ -143,7 +152,7 @@ def log_activity(email, ip, country, city, region, latitude, longitude, timezone
                          latitude, longitude, timezone, isp])
 
 def main_menu():
-    print("------------------------------Welcome to the Geolation Locator-------------------------")
+    print("------------------------------Welcome to the Geolocation Locator-------------------------")
     print("Please select an option:")
     print("1. Login")
     print("2. Sign Up")
@@ -184,5 +193,5 @@ def main():
         else:
             print("Invalid choice. Please try again.")
 
-if _name_ == "_main_":
-    main()
+if __name__ == "__main__":
+    main()
